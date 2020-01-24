@@ -30,6 +30,8 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
     
     private let disposeBag = DisposeBag()
     
+    private var countries: [Country] = []
+    
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -79,7 +81,7 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
             $0.showsHorizontalScrollIndicator = false
         }
         
-        cardSearch.snp.makeConstraints() {
+        cardSearch.snp.makeConstraints {
             if #available(iOS 11.0, *) {
                 $0.top.left.right.equalTo(view.safeAreaLayoutGuide).offset(16)
             } else {
@@ -89,16 +91,27 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
             $0.height.equalTo(40)
         }
         
-        txtSearch.snp.makeConstraints() {
+        txtSearch.snp.makeConstraints {
             $0.top.bottom.right.equalToSuperview()
             $0.left.equalToSuperview().offset(10)
         }
+        
+        tableView.snp.makeConstraints {
+            $0.top.equalTo(cardSearch.snp.bottom).offset(16)
+            $0.left.right.bottom.equalToSuperview()
+        }
+    }
+    
+    func setData(countries: [Country]) {
+        self.countries.append(contentsOf: countries)
+        tableView.reloadData()
+        
+        print("COUNTRYIES : \(self.countries)")
     }
 }
 
 class CountryCell: UITableViewCell {
     
-//    var place: Place!
     let disposeBag = DisposeBag()
     
     let card = MDCCard().apply {
@@ -116,24 +129,33 @@ class CountryCell: UITableViewCell {
         $0.backgroundColor = .clear
     }
     
-    let imgCircle = UIImageView().apply {
-        $0.image = UIImage(named: "ic_circle")
+    let imgFlag = UIImageView().apply {
+//        $0.image = UIImage(named: "ic_default")
+        $0.contentMode = .center
+        $0.layer.masksToBounds = true
+        $0.translatesAutoresizingMaskIntoConstraints = false
     }
     
-    let lblDistance = UILabel().apply {
-        $0.text = ""
+    let lblPopulation = UILabel().apply {
+        $0.text = "0"
         $0.textColor = #colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)
         $0.font = UIFont.appRegularFontWith(ofSize: 10)
     }
     
-    let lblPlace = UILabel().apply {
-        $0.text = ""
+    let lblCountryName = UILabel().apply {
+        $0.text = "Country Name"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
         $0.font = UIFont.appRegularFontWith(ofSize: 14)
     }
     
-    let lblDescription = UILabel().apply {
-        $0.text = "Paranaque Integrated Terminal Exchange"
+    let lblCapital = UILabel().apply {
+        $0.text = "Capital"
+        $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.6954730308)
+        $0.font = UIFont.appRegularFontWith(ofSize: 10)
+    }
+    
+    let lblCode = UILabel().apply {
+        $0.text = "code"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.6954730308)
         $0.font = UIFont.appRegularFontWith(ofSize: 10)
     }
@@ -151,44 +173,50 @@ class CountryCell: UITableViewCell {
         addSubview(card)
         sendSubviewToBack(card)
         addSubview(container)
-        addSubview(imgCircle)
-        addSubview(lblDistance)
-        addSubview(lblPlace)
-        addSubview(lblDescription)
+        addSubview(imgFlag)
+        addSubview(lblPopulation)
+        addSubview(lblCountryName)
+        addSubview(lblCapital)
+        addSubview(lblCode)
     
         
         card.snp.makeConstraints { (maker) in
             maker.edges.equalToSuperview()
-            maker.height.equalTo(60)
+            maker.height.equalTo(80)
         }
         
         container.snp.makeConstraints { (maker) in
             maker.left.equalToSuperview().offset(30)
-            maker.height.equalTo(40)
+            maker.height.equalTo(60)
             maker.centerY.equalToSuperview()
         }
         
-        imgCircle.snp.makeConstraints { (maker) in
+        imgFlag.snp.makeConstraints { (maker) in
             maker.left.equalTo(container.snp.left)
             maker.top.equalTo(container.snp.top)
-            maker.size.equalTo(20)
+            maker.size.equalTo(15)
         }
         
-        lblDistance.snp.makeConstraints { (maker) in
+        lblPopulation.snp.makeConstraints { (maker) in
             maker.bottom.equalTo(container.snp.bottom)
-            maker.centerX.equalTo(imgCircle.snp.centerX)
+            maker.centerX.equalTo(imgFlag.snp.centerX)
         }
         
-        lblPlace.snp.makeConstraints { (maker) in
-            maker.left.equalTo(imgCircle.snp.right).offset(20)
-            maker.top.equalTo(imgCircle.snp.top)
+        lblCountryName.snp.makeConstraints { (maker) in
+            maker.left.equalTo(imgFlag.snp.right).offset(20)
+            maker.top.equalTo(imgFlag.snp.top)
             maker.right.equalToSuperview().offset(-16)
         }
         
-        lblDescription.snp.makeConstraints { (maker) in
-            maker.left.equalTo(imgCircle.snp.right).offset(20)
+        lblCapital.snp.makeConstraints { (maker) in
+            maker.left.equalTo(imgFlag.snp.right).offset(20)
             maker.right.equalToSuperview().offset(-16)
-            maker.bottom.equalTo(lblDistance.snp.bottom)
+            maker.bottom.equalTo(lblPopulation.snp.bottom)
+        }
+        
+        lblCode.snp.makeConstraints {
+            $0.top.equalTo(lblCapital.snp.bottom)
+            $0.centerY.equalTo(lblCapital)
         }
 
 //        card.rx.tapGesture()
@@ -199,24 +227,30 @@ class CountryCell: UITableViewCell {
 //            .disposed(by: disposeBag)
     }
     
-//    func setData(place: Place, userCoord: CLLocationCoordinate2D) {
-//        self.place = place
-//        
-//        lblPlace.text = place.label.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
-//        lblDescription.text = place.description.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
-//        lblDistance.text = "\(String(format: "%.2f", (place.distanceInMeters ?? 0) / 1000)) km"
-//    }
+    func setData(country: Country) {
+        
+        lblCountryName.text = country.name.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
+        lblCapital.text = country.capital.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
+        lblCode.text = country.alpha2Code
+        lblPopulation.text = "\(String(format: "%.d", country.population))"
+    }
 }
 
 extension SearchCountryViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
+        return self.countries.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = self.tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier) as! CountryCell
+        cell.setData(country: self.countries[indexPath.row])
         
+        cell.imgFlag.contentMode = .scaleAspectFill
+        cell.imgFlag.imageFromURL(urlString: self.countries[indexPath.row].flag ?? "")
+        
+        return cell
     }
-    
-    
+
+
 }
- 
+

@@ -18,10 +18,14 @@ final class SearchCountryComponent: Component<SearchCountryDependency> {
     // TODO: Declare 'fileprivate' dependencies that are only used by this RIB.
     
     let searchCountryViewController: SearchCountryViewController
+    
+    var countryService = CountryService()
 
     init(dependency: SearchCountryDependency,
-         searchCountryViewController: SearchCountryViewController) {
+         searchCountryViewController: SearchCountryViewController,
+         countryService: CountryService) {
         self.searchCountryViewController = searchCountryViewController
+        self.countryService = countryService
         super.init(dependency: dependency)
     }
 }
@@ -39,9 +43,14 @@ final class SearchCountryBuilder: Builder<SearchCountryDependency>, SearchCountr
     }
 
     func build() -> LaunchRouting {
+        let countryService = CountryService()
+        
         let viewController = SearchCountryViewController()
-        let component = SearchCountryComponent(dependency: dependency, searchCountryViewController: viewController)
-        let interactor = SearchCountryInteractor(presenter: viewController)
+        let component = SearchCountryComponent(dependency: dependency,
+                                               searchCountryViewController: viewController,
+                                               countryService: countryService)
+        let interactor = SearchCountryInteractor(presenter: viewController,
+                                                 countryService: countryService)
         return SearchCountryRouter(interactor: interactor,
                                    viewController: viewController)
     }

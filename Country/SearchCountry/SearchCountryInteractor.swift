@@ -16,6 +16,7 @@ protocol SearchCountryRouting: ViewableRouting {
 protocol SearchCountryPresentable: Presentable {
     var listener: SearchCountryPresentableListener? { get set }
     // TODO: Declare methods the interactor can invoke the presenter to present data.
+    func setData(countries: [Country])
 }
 
 protocol SearchCountryListener: class {
@@ -27,9 +28,12 @@ final class SearchCountryInteractor: PresentableInteractor<SearchCountryPresenta
     weak var router: SearchCountryRouting?
     weak var listener: SearchCountryListener?
 
+    private var countryService = CountryService()
     // TODO: Add additional dependencies to constructor. Do not perform any logic
     // in constructor.
-    override init(presenter: SearchCountryPresentable) {
+    init(presenter: SearchCountryPresentable,
+                  countryService: CountryService) {
+        self.countryService = countryService
         super.init(presenter: presenter)
         presenter.listener = self
     }
@@ -37,6 +41,12 @@ final class SearchCountryInteractor: PresentableInteractor<SearchCountryPresenta
     override func didBecomeActive() {
         super.didBecomeActive()
         // TODO: Implement business logic here.
+        
+        countryService.getAllCountry()
+        .subscribe(onSuccess: { [weak self] countries in
+            self?.presenter.setData(countries: countries)
+            })
+        .disposeOnDeactivate(interactor: self)
     }
 
     override func willResignActive() {
