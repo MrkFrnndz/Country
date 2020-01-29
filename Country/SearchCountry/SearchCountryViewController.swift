@@ -11,11 +11,15 @@ import RxSwift
 import UIKit
 import SnapKit
 import MaterialComponents.MDCCard
+import SwiftSVG
+import WebKit
 
 protocol SearchCountryPresentableListener: class {
     // TODO: Declare properties and methods that the view controller can invoke to perform
     // business logic, such as signIn(). This protocol is implemented by the corresponding
     // interactor class.
+    func searchCountry(_ q: String)
+    func fetchCountry()
 }
 
 final class SearchCountryViewController: UIViewController, SearchCountryPresentable, SearchCountryViewControllable {
@@ -72,7 +76,7 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
         
         tableView = UITableView().apply {
             $0.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-            $0.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+            $0.backgroundColor = .clear
             $0.translatesAutoresizingMaskIntoConstraints = false
             $0.addTo(view)
             $0.delegate = self
@@ -100,9 +104,24 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
             $0.top.equalTo(cardSearch.snp.bottom).offset(16)
             $0.left.right.bottom.equalToSuperview()
         }
+        
+        txtSearch.rx.controlEvent([.editingChanged])
+//            .filter{ self.txtSearch.text != nil && self.txtSearch.text != "" }
+            .debounce(0.5, scheduler: MainScheduler.instance)
+            .asObservable()
+            .subscribe(onNext: { [weak self] ( _) in
+                guard let this = self else { return }
+                if self?.txtSearch.text != nil && self?.txtSearch.text != "" {
+                    self?.listener?.searchCountry(self!.txtSearch.text!)
+                } else {
+                    self?.listener?.fetchCountry()
+                }
+                
+            }).disposed(by: disposeBag)
     }
     
     func setData(countries: [Country]) {
+        self.countries.removeAll()
         self.countries.append(contentsOf: countries)
         tableView.reloadData()
         
@@ -110,7 +129,7 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
     }
 }
 
-class CountryCell: UITableViewCell {
+class CountryCell: UITableViewCell, WKNavigationDelegate {
     
     let disposeBag = DisposeBag()
     
@@ -129,9 +148,11 @@ class CountryCell: UITableViewCell {
         $0.backgroundColor = .clear
     }
     
-    let imgFlag = UIImageView().apply {
+    let imgFlag = WKWebView().apply {
 //        $0.image = UIImage(named: "ic_default")
-        $0.contentMode = .center
+//        $0.sizeThatFits(CGSize(width: 50, height: 100))
+        $0.scalesLargeContentImage = false
+        $0.contentScaleFactor = 50
         $0.layer.masksToBounds = true
         $0.translatesAutoresizingMaskIntoConstraints = false
     }
@@ -139,26 +160,33 @@ class CountryCell: UITableViewCell {
     let lblPopulation = UILabel().apply {
         $0.text = "0"
         $0.textColor = #colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)
-        $0.font = UIFont.appRegularFontWith(ofSize: 10)
+//        $0.font = UIFont.appRegularFontWith(ofSize: 10)
     }
     
     let lblCountryName = UILabel().apply {
         $0.text = "Country Name"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-        $0.font = UIFont.appRegularFontWith(ofSize: 14)
+//        $0.font = UIFont.appRegularFontWith(ofSize: 14)
     }
     
     let lblCapital = UILabel().apply {
         $0.text = "Capital"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.6954730308)
-        $0.font = UIFont.appRegularFontWith(ofSize: 10)
+//        $0.font = UIFont.appRegularFontWith(ofSize: 10)
     }
     
     let lblCode = UILabel().apply {
         $0.text = "code"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.6954730308)
-        $0.font = UIFont.appRegularFontWith(ofSize: 10)
+//        $0.font = UIFont.appRegularFontWith(ofSize: 10)
     }
+    
+    //FLAG
+    let activityIndicator = UIActivityIndicatorView().apply {
+        $0.style = .gray
+    }
+//    activityIndicator.frame = CGRect.init(x: 0, y: 0, width: self.frame.size.width, height: self.frame.size.height)
+
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -174,32 +202,31 @@ class CountryCell: UITableViewCell {
         sendSubviewToBack(card)
         addSubview(container)
         addSubview(imgFlag)
+        imgFlag.navigationDelegate = self
         addSubview(lblPopulation)
         addSubview(lblCountryName)
         addSubview(lblCapital)
         addSubview(lblCode)
+        addSubview(activityIndicator)
+        bringSubviewToFront(activityIndicator)
     
         
         card.snp.makeConstraints { (maker) in
             maker.edges.equalToSuperview()
-            maker.height.equalTo(80)
+            maker.height.equalTo(100)
         }
         
         container.snp.makeConstraints { (maker) in
             maker.left.equalToSuperview().offset(30)
-            maker.height.equalTo(60)
+            maker.height.equalTo(80)
             maker.centerY.equalToSuperview()
         }
         
         imgFlag.snp.makeConstraints { (maker) in
             maker.left.equalTo(container.snp.left)
             maker.top.equalTo(container.snp.top)
-            maker.size.equalTo(15)
-        }
-        
-        lblPopulation.snp.makeConstraints { (maker) in
             maker.bottom.equalTo(container.snp.bottom)
-            maker.centerX.equalTo(imgFlag.snp.centerX)
+            maker.width.equalTo(100)
         }
         
         lblCountryName.snp.makeConstraints { (maker) in
@@ -208,31 +235,63 @@ class CountryCell: UITableViewCell {
             maker.right.equalToSuperview().offset(-16)
         }
         
-        lblCapital.snp.makeConstraints { (maker) in
-            maker.left.equalTo(imgFlag.snp.right).offset(20)
-            maker.right.equalToSuperview().offset(-16)
-            maker.bottom.equalTo(lblPopulation.snp.bottom)
+        lblCapital.snp.makeConstraints {
+            $0.top.equalTo(lblCountryName.snp.bottom)
+            $0.left.equalTo(lblCountryName)
         }
         
         lblCode.snp.makeConstraints {
             $0.top.equalTo(lblCapital.snp.bottom)
-            $0.centerY.equalTo(lblCapital)
+            $0.left.equalTo(lblCapital)
         }
+        
+        lblPopulation.snp.makeConstraints {
+            $0.top.equalTo(lblCode.snp.bottom)
+            $0.left.equalTo(lblCode)
+        }
+        
+        activityIndicator.snp.makeConstraints {
+            $0.left.equalTo(container.snp.left)
+            $0.top.equalTo(container.snp.top)
+            $0.bottom.equalTo(container.snp.bottom)
+            $0.width.equalTo(100)
+            activityIndicator.startAnimating()
+        }
+        
 
 //        card.rx.tapGesture()
 //            .when(.recognized)
 //            .subscribe(onNext: { [weak self] _ in
-//                self?.clickPlaceRelay.accept(self!.place!)
 //            })
 //            .disposed(by: disposeBag)
     }
     
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+         self.activityIndicator.removeFromSuperview()
+    }
     func setData(country: Country) {
         
         lblCountryName.text = country.name.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
         lblCapital.text = country.capital.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
         lblCode.text = country.alpha2Code
         lblPopulation.text = "\(String(format: "%.d", country.population))"
+        
+        
+        //Loading indicator
+        activityIndicator.snp.updateConstraints {
+            $0.left.equalTo(container.snp.left)
+            $0.top.equalTo(container.snp.top)
+            $0.bottom.equalTo(container.snp.bottom)
+            $0.width.equalTo(100)
+            activityIndicator.startAnimating()
+        }
+        
+        
+        //FLAG
+        let url = URL(string: country.flag)
+        let request = URLRequest(url: url!)
+        let svgString = try? String(contentsOf: url!)
+        imgFlag.loadHTMLString(svgString!, baseURL: URL(string: country.flag))
     }
 }
 
@@ -244,10 +303,6 @@ extension SearchCountryViewController: UITableViewDelegate, UITableViewDataSourc
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = self.tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier) as! CountryCell
         cell.setData(country: self.countries[indexPath.row])
-        
-        cell.imgFlag.contentMode = .scaleAspectFill
-        cell.imgFlag.imageFromURL(urlString: self.countries[indexPath.row].flag ?? "")
-        
         return cell
     }
 

@@ -24,6 +24,7 @@ target 'Country' do
   pod 'MaterialComponents/Tabs'
   pod 'MaterialComponents/BottomNavigation'
   pod 'FLEX', :configurations => ['Debug']
+  pod 'SwiftSVG', '~> 2.0'
 
   target 'CountryTests' do
     inherit! :search_paths

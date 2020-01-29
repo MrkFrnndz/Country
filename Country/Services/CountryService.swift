@@ -21,10 +21,11 @@ final class CountryService: CountryServiceProtocol {
         
     }
     
-    
     func getAllCountry() -> Single<[Country]> {
+        let BASE_URL = "https://restcountries.eu/rest/v2/all?fields=flag;name;capital;alpha2Code;alpha3Code;population;"
+        
         return Single<[Country]>.create { [self] single in
-            Alamofire.request("https://restcountries.eu/rest/v2/all",
+            Alamofire.request(BASE_URL,
                               method: .get,
                               parameters: nil,
                               encoding: URLEncoding.queryString,
