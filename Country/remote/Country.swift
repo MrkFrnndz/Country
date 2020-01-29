@@ -8,10 +8,18 @@
 
 import Foundation
 
-class Country: Codable {
+struct Country: Codable {
     let flag: String
-    let countryName: String
+    let name: String
     let capital: String
     let alpha2Code: String
-    let population: String
+    let population: Int
+    
+//    init(flag: String, name: String, capital: String, alpha2Code: String, population: Int) {
+//        self.flag = flag
+//        self.name = name
+//        self.capital = capital
+//        self.alpha2Code = alpha2Code
+//        self.population = population
+//    }
 }

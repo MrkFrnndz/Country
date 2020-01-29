@@ -97,6 +97,7 @@ PODS:
     - RxSwift (~> 4.3.1)
   - RxSwift (4.3.1)
   - SnapKit (4.2.0)
+  - SwiftSVG (2.3.2)
 
 DEPENDENCIES:
   - Alamofire (~> 4.7.3)
@@ -112,6 +113,7 @@ DEPENDENCIES:
   - RxGesture (~> 2.0.1)
   - RxSwift (~> 4.3.1)
   - SnapKit (~> 4.2.0)
+  - SwiftSVG (~> 2.0)
 
 SPEC REPOS:
   trunk:
@@ -128,6 +130,7 @@ SPEC REPOS:
     - RxGesture
     - RxSwift
     - SnapKit
+    - SwiftSVG
 
 SPEC CHECKSUMS:
   Alamofire: c7287b6e5d7da964a70935e5db17046b7fde6568
@@ -143,7 +146,8 @@ SPEC CHECKSUMS:
   RxGesture: 26ede4ed13ffc6336d29dbd9a8dff229bdb72de7
   RxSwift: fe0fd770a43acdb7d0a53da411c9b892e69bb6e4
   SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
+  SwiftSVG: ca7f64e403b8ea7ea8eba8c823b83ba4a059834c
 
-PODFILE CHECKSUM: 36b90c267c11827b41be6cfd767330baceaac803
+PODFILE CHECKSUM: 027c401d65824283a33fa65c0c3533fa6bb20885
 
 COCOAPODS: 1.8.4

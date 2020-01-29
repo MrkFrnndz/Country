@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SwiftSVG
 
 protocol HasAddTo { }
 
@@ -17,3 +18,6 @@ extension HasAddTo {
 }
 
 extension UIView : HasAddTo { }
+
+
+//extension UIView: SVGView {}

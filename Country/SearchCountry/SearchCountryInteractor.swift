@@ -16,6 +16,7 @@ protocol SearchCountryRouting: ViewableRouting {
 protocol SearchCountryPresentable: Presentable {
     var listener: SearchCountryPresentableListener? { get set }
     // TODO: Declare methods the interactor can invoke the presenter to present data.
+    func setData(countries: [Country])
 }
 
 protocol SearchCountryListener: class {
@@ -27,9 +28,14 @@ final class SearchCountryInteractor: PresentableInteractor<SearchCountryPresenta
     weak var router: SearchCountryRouting?
     weak var listener: SearchCountryListener?
 
+    private var countryService = CountryService()
+    
+    private var countries: [Country] = []
     // TODO: Add additional dependencies to constructor. Do not perform any logic
     // in constructor.
-    override init(presenter: SearchCountryPresentable) {
+    init(presenter: SearchCountryPresentable,
+                  countryService: CountryService) {
+        self.countryService = countryService
         super.init(presenter: presenter)
         presenter.listener = self
     }
@@ -37,10 +43,33 @@ final class SearchCountryInteractor: PresentableInteractor<SearchCountryPresenta
     override func didBecomeActive() {
         super.didBecomeActive()
         // TODO: Implement business logic here.
+        
+        fetchCountry()
     }
 
     override func willResignActive() {
         super.willResignActive()
         // TODO: Pause any business logic.
     }
+    
+    func searchCountry(_ q: String) {
+        var searched = self.countries.filter({ country in country.name == q || country.alpha2Code == q || country.capital == q })
+        print("SEARCHED : \(searched)")
+        
+        presenter.setData(countries: searched)
+    }
+    
+    func fetchCountry() {
+        countryService.getAllCountry()
+        .subscribe(onSuccess: { [weak self] countries in
+            
+            self?.countries.removeAll()
+            self?.countries.append(contentsOf: countries)
+            
+            self?.presenter.setData(countries: countries)
+            })
+        .disposeOnDeactivate(interactor: self)
+    }
+    
+    
 }
