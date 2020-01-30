@@ -20,6 +20,7 @@ protocol SearchCountryPresentableListener: class {
     // interactor class.
     func searchCountry(_ q: String)
     func fetchCountry()
+    func goToDetails(country: Country)
 }
 
 final class SearchCountryViewController: UIViewController, SearchCountryPresentable, SearchCountryViewControllable {
@@ -57,9 +58,9 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
         }
         
         txtSearch = UITextField().apply {
-//            $0.font = UIFont.appRegularFontWith(ofSize: 16)
+            $0.font = UIFont.appRegularFontWith(ofSize: 16)
             let hasValue = txtSearch.text != ""
-            $0.placeholder = "Search Organization"
+            $0.placeholder = "Search Country"
             $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             
             $0.borderStyle = UITextField.BorderStyle.none
@@ -127,11 +128,19 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
         
         print("COUNTRYIES : \(self.countries)")
     }
+    
+    func present(viewController: ViewControllable) {
+        present(viewController.uiviewController, animated: true, completion: nil)
+    }
+    
+    func dismiss(viewController: ViewControllable) {
+        if presentedViewController === viewController.uiviewController {
+            dismiss(animated: true, completion: nil)
+        }
+    }
 }
 
 class CountryCell: UITableViewCell, WKNavigationDelegate {
-    
-    let disposeBag = DisposeBag()
     
     let card = MDCCard().apply {
         $0.setShadowElevation(ShadowElevation(rawValue: 0), for: .normal)
@@ -151,41 +160,43 @@ class CountryCell: UITableViewCell, WKNavigationDelegate {
     let imgFlag = WKWebView().apply {
 //        $0.image = UIImage(named: "ic_default")
 //        $0.sizeThatFits(CGSize(width: 50, height: 100))
-        $0.scalesLargeContentImage = false
+        if #available(iOS 13.0, *) {
+            $0.scalesLargeContentImage = false
+        } else {
+            // Fallback on earlier versions
+        }
         $0.contentScaleFactor = 50
         $0.layer.masksToBounds = true
         $0.translatesAutoresizingMaskIntoConstraints = false
     }
     
-    let lblPopulation = UILabel().apply {
-        $0.text = "0"
-        $0.textColor = #colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)
-//        $0.font = UIFont.appRegularFontWith(ofSize: 10)
-    }
-    
     let lblCountryName = UILabel().apply {
         $0.text = "Country Name"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-//        $0.font = UIFont.appRegularFontWith(ofSize: 14)
+        $0.font = UIFont.appBoldFontWith(ofSize: 16)
     }
     
     let lblCapital = UILabel().apply {
         $0.text = "Capital"
-        $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.6954730308)
-//        $0.font = UIFont.appRegularFontWith(ofSize: 10)
+        $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
+        $0.font = UIFont.appRegularFontWith(ofSize: 16)
     }
     
     let lblCode = UILabel().apply {
         $0.text = "code"
-        $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.6954730308)
-//        $0.font = UIFont.appRegularFontWith(ofSize: 10)
+        $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
+        $0.font = UIFont.appRegularFontWith(ofSize: 16)
     }
     
-    //FLAG
+    let lblPopulation = UILabel().apply {
+        $0.text = "0"
+        $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
+        $0.font = UIFont.appRegularFontWith(ofSize: 16)
+    }
+    
     let activityIndicator = UIActivityIndicatorView().apply {
         $0.style = .gray
     }
-//    activityIndicator.frame = CGRect.init(x: 0, y: 0, width: self.frame.size.width, height: self.frame.size.height)
 
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -257,18 +268,12 @@ class CountryCell: UITableViewCell, WKNavigationDelegate {
             $0.width.equalTo(100)
             activityIndicator.startAnimating()
         }
-        
-
-//        card.rx.tapGesture()
-//            .when(.recognized)
-//            .subscribe(onNext: { [weak self] _ in
-//            })
-//            .disposed(by: disposeBag)
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
          self.activityIndicator.removeFromSuperview()
     }
+    
     func setData(country: Country) {
         
         lblCountryName.text = country.name.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
@@ -303,7 +308,14 @@ extension SearchCountryViewController: UITableViewDelegate, UITableViewDataSourc
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = self.tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier) as! CountryCell
         cell.setData(country: self.countries[indexPath.row])
+        
+        cell.card.tag = indexPath.row
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.listener?.goToDetails(country: self.countries[indexPath.row])
+        print(self.countries[indexPath.row])
     }
 
 

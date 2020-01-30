@@ -15,6 +15,7 @@
 		364CB7D823E139D800C6C80D /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364CB7D423E139D700C6C80D /* DetailsViewController.swift */; };
 		364CB7D923E139D800C6C80D /* DetailsBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364CB7D523E139D700C6C80D /* DetailsBuilder.swift */; };
 		364CB7DA23E139D800C6C80D /* DetailsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364CB7D623E139D700C6C80D /* DetailsInteractor.swift */; };
+		364CB7DC23E14D3600C6C80D /* SearchCountryComponent+Details.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364CB7DB23E14D3600C6C80D /* SearchCountryComponent+Details.swift */; };
 		36A6FCA823D93B790090D895 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A6FCA723D93B790090D895 /* AppDelegate.swift */; };
 		36A6FCBF23D93B7D0090D895 /* CountryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A6FCBE23D93B7D0090D895 /* CountryTests.swift */; };
 		36A6FCCA23D93B7D0090D895 /* CountryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A6FCC923D93B7D0090D895 /* CountryUITests.swift */; };
@@ -62,6 +63,7 @@
 		364CB7D423E139D700C6C80D /* DetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsViewController.swift; sourceTree = "<group>"; };
 		364CB7D523E139D700C6C80D /* DetailsBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsBuilder.swift; sourceTree = "<group>"; };
 		364CB7D623E139D700C6C80D /* DetailsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsInteractor.swift; sourceTree = "<group>"; };
+		364CB7DB23E14D3600C6C80D /* SearchCountryComponent+Details.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SearchCountryComponent+Details.swift"; sourceTree = "<group>"; };
 		36A6FCA423D93B780090D895 /* Country.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Country.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36A6FCA723D93B790090D895 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		36A6FCB523D93B7D0090D895 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -209,6 +211,7 @@
 				36B5CE4723D9433100554582 /* SearchCountryViewController.swift */,
 				36B5CE4823D9433100554582 /* SearchCountryBuilder.swift */,
 				36B5CE4923D9433100554582 /* SearchCountryInteractor.swift */,
+				364CB7DB23E14D3600C6C80D /* SearchCountryComponent+Details.swift */,
 			);
 			path = SearchCountry;
 			sourceTree = "<group>";
@@ -500,6 +503,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				364CB7DC23E14D3600C6C80D /* SearchCountryComponent+Details.swift in Sources */,
 				36B5CE5123D9455600554582 /* AppComponent.swift in Sources */,
 				364CB7DA23E139D800C6C80D /* DetailsInteractor.swift in Sources */,
 				36B5CE4D23D9433100554582 /* SearchCountryInteractor.swift in Sources */,
@@ -675,6 +679,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 78JP3UM8Q7;
 				INFOPLIST_FILE = Country/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -694,6 +699,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 78JP3UM8Q7;
 				INFOPLIST_FILE = Country/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
