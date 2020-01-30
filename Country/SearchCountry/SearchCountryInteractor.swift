@@ -11,6 +11,8 @@ import RxSwift
 
 protocol SearchCountryRouting: ViewableRouting {
     // TODO: Declare methods the interactor can invoke to manage sub-tree via the router.
+    func routeToDetails(country: Country)
+    func detachCurrentChild()
 }
 
 protocol SearchCountryPresentable: Presentable {
@@ -71,5 +73,7 @@ final class SearchCountryInteractor: PresentableInteractor<SearchCountryPresenta
         .disposeOnDeactivate(interactor: self)
     }
     
-    
+    func goToDetails(country: Country) {
+        router?.routeToDetails(country: country)
+    }
 }

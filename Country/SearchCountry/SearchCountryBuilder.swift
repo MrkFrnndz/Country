@@ -51,7 +51,9 @@ final class SearchCountryBuilder: Builder<SearchCountryDependency>, SearchCountr
                                                countryService: countryService)
         let interactor = SearchCountryInteractor(presenter: viewController,
                                                  countryService: countryService)
+        let detailsBuilder = DetailsBuilder(dependency: component)
         return SearchCountryRouter(interactor: interactor,
-                                   viewController: viewController)
+                                   viewController: viewController,
+                                   detailsBuilder: detailsBuilder)
     }
 }
