@@ -11,8 +11,7 @@ import RxSwift
 import UIKit
 import SnapKit
 import MaterialComponents.MDCCard
-import SwiftSVG
-import WebKit
+import SDWebImageSVGKitPlugin
 
 protocol SearchCountryPresentableListener: class {
     // TODO: Declare properties and methods that the view controller can invoke to perform
@@ -29,6 +28,7 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
     
     private var cardSearch = MDCCard()
     private var txtSearch = UITextField()
+    private var noContentlbl = UILabel()
     
     private var tableView: UITableView!
     private let cellReuseIdentifier = "CountryCell"
@@ -48,7 +48,7 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = #colorLiteral(red: 0.934525698, green: 0.934525698, blue: 0.934525698, alpha: 1)
+        view.backgroundColor = #colorLiteral(red: 0.9059327411, green: 0.9059327411, blue: 0.9059327411, alpha: 1)
         
         cardSearch = MDCCard().apply {
             $0.setShadowColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5), for: .normal)
@@ -79,11 +79,24 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
             $0.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
             $0.backgroundColor = .clear
             $0.translatesAutoresizingMaskIntoConstraints = false
-            $0.addTo(view)
             $0.delegate = self
             $0.dataSource = self
             $0.register(CountryCell.self, forCellReuseIdentifier: self.cellReuseIdentifier)
             $0.showsHorizontalScrollIndicator = false
+            $0.addTo(view)
+        }
+        
+        noContentlbl = UILabel().apply {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            $0.text = "Country not found."
+            $0.textColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+            $0.font = UIFont.appBoldFontWith(ofSize: 20)
+            $0.isHidden = true
+            $0.addTo(view)
+            
+            $0.snp.makeConstraints {
+                $0.centerX.centerY.equalToSuperview()
+            }
         }
         
         cardSearch.snp.makeConstraints {
@@ -127,10 +140,20 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
         tableView.reloadData()
         
         print("COUNTRYIES : \(self.countries)")
+        
+        if countries.count == 0 {
+            tableView.isHidden = true
+            noContentlbl.isHidden = false
+        } else {
+            tableView.isHidden = false
+            noContentlbl.isHidden = true
+        }
     }
     
     func present(viewController: ViewControllable) {
-        present(viewController.uiviewController, animated: true, completion: nil)
+        let vc = viewController.uiviewController
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true, completion: nil)
     }
     
     func dismiss(viewController: ViewControllable) {
@@ -140,9 +163,10 @@ final class SearchCountryViewController: UIViewController, SearchCountryPresenta
     }
 }
 
-class CountryCell: UITableViewCell, WKNavigationDelegate {
+class CountryCell: UITableViewCell {
     
     let card = MDCCard().apply {
+        $0.translatesAutoresizingMaskIntoConstraints = false
         $0.setShadowElevation(ShadowElevation(rawValue: 0), for: .normal)
         $0.setShadowColor(.clear, for: .normal)
         $0.backgroundColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
@@ -150,45 +174,46 @@ class CountryCell: UITableViewCell, WKNavigationDelegate {
     }
     
     let line = UIView().apply {
+        $0.translatesAutoresizingMaskIntoConstraints = false
         $0.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.08)
     }
     
     let container = UIView().apply {
+        $0.translatesAutoresizingMaskIntoConstraints = false
         $0.backgroundColor = .clear
     }
-    
-    let imgFlag = WKWebView().apply {
-//        $0.image = UIImage(named: "ic_default")
-//        $0.sizeThatFits(CGSize(width: 50, height: 100))
-        if #available(iOS 13.0, *) {
-            $0.scalesLargeContentImage = false
-        } else {
-            // Fallback on earlier versions
-        }
-        $0.contentScaleFactor = 50
-        $0.layer.masksToBounds = true
+    let imgView = UIImageView().apply {
         $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.layer.cornerRadius = 8
+        $0.layer.masksToBounds = true
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = #colorLiteral(red: 0.9250872462, green: 0.9250872462, blue: 0.9250872462, alpha: 1)
+        $0.contentMode = .scaleAspectFill
     }
     
     let lblCountryName = UILabel().apply {
+        $0.translatesAutoresizingMaskIntoConstraints = false
         $0.text = "Country Name"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
         $0.font = UIFont.appBoldFontWith(ofSize: 16)
     }
     
     let lblCapital = UILabel().apply {
+        $0.translatesAutoresizingMaskIntoConstraints = false
         $0.text = "Capital"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
         $0.font = UIFont.appRegularFontWith(ofSize: 16)
     }
     
     let lblCode = UILabel().apply {
+        $0.translatesAutoresizingMaskIntoConstraints = false
         $0.text = "code"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
         $0.font = UIFont.appRegularFontWith(ofSize: 16)
     }
     
     let lblPopulation = UILabel().apply {
+        $0.translatesAutoresizingMaskIntoConstraints = false
         $0.text = "0"
         $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
         $0.font = UIFont.appRegularFontWith(ofSize: 16)
@@ -212,8 +237,7 @@ class CountryCell: UITableViewCell, WKNavigationDelegate {
         addSubview(card)
         sendSubviewToBack(card)
         addSubview(container)
-        addSubview(imgFlag)
-        imgFlag.navigationDelegate = self
+        addSubview(imgView)
         addSubview(lblPopulation)
         addSubview(lblCountryName)
         addSubview(lblCapital)
@@ -228,21 +252,21 @@ class CountryCell: UITableViewCell, WKNavigationDelegate {
         }
         
         container.snp.makeConstraints { (maker) in
-            maker.left.equalToSuperview().offset(30)
+            maker.left.equalToSuperview().offset(16)
             maker.height.equalTo(80)
             maker.centerY.equalToSuperview()
         }
         
-        imgFlag.snp.makeConstraints { (maker) in
+        imgView.snp.makeConstraints { (maker) in
             maker.left.equalTo(container.snp.left)
             maker.top.equalTo(container.snp.top)
             maker.bottom.equalTo(container.snp.bottom)
-            maker.width.equalTo(100)
+            maker.size.equalTo(100)
         }
         
         lblCountryName.snp.makeConstraints { (maker) in
-            maker.left.equalTo(imgFlag.snp.right).offset(20)
-            maker.top.equalTo(imgFlag.snp.top)
+            maker.left.equalTo(imgView.snp.right).offset(20)
+            maker.top.equalTo(imgView.snp.top)
             maker.right.equalToSuperview().offset(-16)
         }
         
@@ -270,10 +294,6 @@ class CountryCell: UITableViewCell, WKNavigationDelegate {
         }
     }
     
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-         self.activityIndicator.removeFromSuperview()
-    }
-    
     func setData(country: Country) {
         
         lblCountryName.text = country.name.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression, range: nil)
@@ -290,13 +310,22 @@ class CountryCell: UITableViewCell, WKNavigationDelegate {
             $0.width.equalTo(100)
             activityIndicator.startAnimating()
         }
+
         
-        
-        //FLAG
-        let url = URL(string: country.flag)
-        let request = URLRequest(url: url!)
-        let svgString = try? String(contentsOf: url!)
-        imgFlag.loadHTMLString(svgString!, baseURL: URL(string: country.flag))
+        if let url = URL(string: country.flag) {
+            let svgCoder = SDImageSVGKCoder.shared
+            SDImageCodersManager.shared.addCoder(svgCoder)
+            imgView.sd_setImage(with: url)
+            
+            imgView.snp.removeConstraints()
+            imgView.snp.makeConstraints { (maker) in
+                maker.left.equalTo(container.snp.left)
+                maker.top.equalTo(container.snp.top)
+                maker.bottom.equalTo(container.snp.bottom)
+                maker.size.equalTo(100)
+            }
+            activityIndicator.stopAnimating()
+        }
     }
 }
 

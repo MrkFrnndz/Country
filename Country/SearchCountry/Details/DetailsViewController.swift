@@ -9,8 +9,7 @@
 import RIBs
 import RxSwift
 import UIKit
-import WebKit
-import SwiftSVG
+import SDWebImageSVGKitPlugin
 import MaterialComponents.MDCCard
 
 protocol DetailsPresentableListener: class {
@@ -26,7 +25,7 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
     var btnBack = MDCCard()
     var lblBack = UILabel()
     var imgBack = UIImageView()
-    var imgFlag = WKWebView()
+    var imgFlag = UIImageView()
     var lblPopulation = UILabel()
     var lblCountryName = UILabel()
     var lblCapital = UILabel()
@@ -40,7 +39,7 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
     
     
     override func viewDidLoad() {
-        view.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        view.backgroundColor = #colorLiteral(red: 0.9571502221, green: 0.9571502221, blue: 0.9571502221, alpha: 1)
         
         btnBack = MDCCard().apply {
             $0.cornerRadius = 20
@@ -51,7 +50,7 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
         imgBack = UIImageView().apply {
             $0.image = UIImage(named: "ic_back")?.withRenderingMode(.alwaysTemplate)
             $0.tintColor = .black
-            $0.addTo(view)
+            $0.addTo(btnBack)
         }
         
         lblBack = UILabel().apply {
@@ -61,16 +60,9 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
             $0.addTo(view)
         }
         
-        imgFlag = WKWebView().apply {
-            $0.navigationDelegate = self
-            if #available(iOS 13.0, *) {
-                $0.scalesLargeContentImage = false
-            } else {
-                // Fallback on earlier versions
-            }
-            $0.contentScaleFactor = 50
-            $0.layer.masksToBounds = true
+        imgFlag = UIImageView().apply {
             $0.translatesAutoresizingMaskIntoConstraints = false
+            $0.contentMode = .scaleAspectFill
             $0.addTo(view)
         }
         
@@ -78,6 +70,7 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
             $0.text = "Country Name"
             $0.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             $0.font = UIFont.appBoldFontWith(ofSize: 20)
+            $0.numberOfLines = 0
             $0.addTo(view)
         }
         
@@ -104,20 +97,20 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
         
         view.addSubview(activityIndicator)
         view.bringSubviewToFront(activityIndicator)
-        
+        view.bringSubviewToFront(btnBack)
 
         btnBack.snp.makeConstraints {
             if #available(iOS 11.0, *) {
-                $0.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+                $0.top.equalTo(view.safeAreaLayoutGuide).offset(32)
             } else {
-                $0.top.equalToSuperview().offset(16)
+                $0.top.equalToSuperview().offset(32)
             }
             $0.left.equalToSuperview().offset(16)
             $0.height.width.equalTo(40)
         }
         
         imgBack.snp.makeConstraints {
-            $0.centerX.centerY.equalTo(btnBack)
+            $0.centerX.centerY.equalToSuperview()
         }
         
         lblBack.snp.makeConstraints {
@@ -126,30 +119,37 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
         }
         
         imgFlag.snp.makeConstraints {
-            $0.top.equalTo(btnBack.snp.bottom).offset(32)
-            $0.width.equalTo(350)
-            $0.height.equalTo(210)
-            $0.left.equalToSuperview().offset(16)
+            if #available(iOS 11.0, *) {
+                $0.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+            } else {
+                $0.top.equalToSuperview().offset(16)
+            }
+            $0.left.right.equalToSuperview()
+            $0.height.equalTo(350)
         }
         
         lblCountryName.snp.makeConstraints {
             $0.top.equalTo(imgFlag.snp.bottom).offset(10)
             $0.left.equalToSuperview().offset(16)
+            $0.right.equalToSuperview().inset(16)
         }
         
         lblCapital.snp.makeConstraints {
             $0.top.equalTo(lblCountryName.snp.bottom).offset(5)
             $0.left.equalToSuperview().offset(16)
+            $0.right.equalToSuperview().inset(16)
         }
         
         lblCode.snp.makeConstraints {
             $0.top.equalTo(lblCapital.snp.bottom).offset(5)
             $0.left.equalToSuperview().offset(16)
+            $0.right.equalToSuperview().inset(16)
         }
         
         lblPopulation.snp.makeConstraints {
             $0.top.equalTo(lblCode.snp.bottom).offset(5)
             $0.left.equalToSuperview().offset(16)
+            $0.right.equalToSuperview().inset(16)
         }
         
         activityIndicator.snp.makeConstraints {
@@ -167,22 +167,28 @@ final class DetailsViewController: UIViewController, DetailsPresentable, Details
     }
     
     func setData(country: Country) {
-        lblCountryName.text = country.name
-        lblCapital.text = country.capital
-        lblCode.text = country.alpha2Code
-        lblPopulation.text =  "\(country.population)"
+        lblCountryName.text = "Name : \(country.name)"
+        lblCapital.text = "Capital : \(country.capital)"
+        lblCode.text = "Code : \(country.alpha2Code)"
+        lblPopulation.text =  "Population : \(country.population)"
         
-        //FLAG
-        let url = URL(string: country.flag)
-        let request = URLRequest(url: url!)
-        let svgString = try? String(contentsOf: url!)
-        imgFlag.loadHTMLString(svgString!, baseURL: URL(string: country.flag))
+        if let url = URL(string: country.flag) {
+            let svgCoder = SDImageSVGKCoder.shared
+            SDImageCodersManager.shared.addCoder(svgCoder)
+            imgFlag.sd_setImage(with: url)
+            
+            imgFlag.snp.removeConstraints()
+            imgFlag.snp.makeConstraints {
+                if #available(iOS 11.0, *) {
+                    $0.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+                } else {
+                    $0.top.equalToSuperview().offset(16)
+                }
+                $0.left.right.equalToSuperview()
+                $0.height.equalTo(350)
+            }
+            activityIndicator.stopAnimating()
+        }
         
-    }
-}
-
-extension DetailsViewController: WKNavigationDelegate {
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-         self.activityIndicator.removeFromSuperview()
     }
 }

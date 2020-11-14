@@ -55,7 +55,7 @@ final class SearchCountryInteractor: PresentableInteractor<SearchCountryPresenta
     }
     
     func searchCountry(_ q: String) {
-        var searched = self.countries.filter({ country in country.name == q || country.alpha2Code == q || country.capital == q })
+        let searched = self.countries.filter({ country in country.name.contains(q) || country.alpha2Code.contains(q) || country.capital.contains(q) })
         print("SEARCHED : \(searched)")
         
         presenter.setData(countries: searched)

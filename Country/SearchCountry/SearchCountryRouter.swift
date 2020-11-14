@@ -47,7 +47,7 @@ final class SearchCountryRouter: LaunchRouter<SearchCountryInteractable, SearchC
     func routeToDetails(country: Country) {
         let child = detailsBuilder.build(withListener: interactor, country: country)
         self.currentChild = child
-        viewController.uiviewController.modalPresentationStyle = .overFullScreen
+//        viewController.uiviewController.modalPresentationStyle = .overFullScreen
         viewController.present(viewController: child.viewControllable)
         attachChild(child)
     }
